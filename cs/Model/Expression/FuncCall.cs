@@ -62,4 +62,15 @@ public sealed class FuncCall<ArgsNumber> : FuncCall where ArgsNumber : CallArgs
     internal FuncCall(Fonction<ArgsNumber> func, Expression[] args) : base(func, args)
     {
     }
+
+    internal override bool Validate(ValidationContext vc)
+    {
+        foreach (Expression item in Param)
+        {
+            if (!vc.Expressions.Contains(item))
+                return false;
+        }
+
+        return vc.App.Fonctions.Contains(Func);
+    }
 }

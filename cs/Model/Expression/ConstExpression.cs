@@ -14,4 +14,6 @@ public sealed class ConstExpression : Expression
     public int Valeur { get; set; }
 
     internal override void ToString(ColoredStringBuilder sb, VarDictIndex numIndex) => sb.Append(Valeur);
+
+    internal override bool Validate(ValidationContext vc) => true;
 }

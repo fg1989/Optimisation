@@ -1,11 +1,9 @@
 ﻿namespace Model;
 
 /// <summary>Cette classe modélise une contrainte sur le nombre d'arguments d'une fonction</summary>
-public abstract class CallArgs
+public interface CallArgs
 {
-    private protected CallArgs()
-    {
-    }
+    internal static abstract int Count { get; }
 }
 
 /// <summary>Cette classe représente les fonctions sans arguments</summary>
@@ -19,6 +17,8 @@ public sealed class Args0 : CallArgs
     private Args0()
     {
     }
+
+    static int CallArgs.Count => 0;
 }
 
 /// <summary>Cette classe représente les fonctions avec 1 argument</summary>
@@ -32,6 +32,8 @@ public sealed class Args1 : CallArgs
     private Args1()
     {
     }
+
+    static int CallArgs.Count => 1;
 }
 
 /// <summary>Cette classe représente les fonctions avec 2 arguments</summary>
@@ -45,6 +47,8 @@ public sealed class Args2 : CallArgs
     private Args2()
     {
     }
+
+    static int CallArgs.Count => 2;
 }
 
 /// <summary>Cette classe représente les fonctions avec 3 arguments</summary>
@@ -58,4 +62,6 @@ public sealed class Args3 : CallArgs
     private Args3()
     {
     }
+
+    static int CallArgs.Count => 3;
 }

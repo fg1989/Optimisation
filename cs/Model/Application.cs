@@ -42,4 +42,15 @@ public sealed class Application : CompilationSource
             .AppendLine()
             .Normal();
     }
+
+    /// <summary>Vérifie si une application est valide</summary>
+    public bool Validate()
+    {
+        foreach (Fonction item in Fonctions)
+        {
+            if (!item.Validate(this))
+                return false;
+        }
+        return Main.Validate(this);
+    }
 }

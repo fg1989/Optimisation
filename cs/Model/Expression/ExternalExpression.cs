@@ -11,6 +11,8 @@ public abstract class ExternalExpression : Expression
     /// <summary>L'index du calcul</summary>
     /// <remarks>Cette valeur sert a distinguer deux calculs différents</remarks>
     public int Valeur { get; set; }
+
+    internal sealed override bool Validate(ValidationContext vc) => true;
 }
 
 /// <summary>Cette expression représente un calcul simple qui ne peut pas être optimisé</summary>

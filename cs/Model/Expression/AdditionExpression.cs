@@ -20,4 +20,6 @@ public sealed class AdditionExpression : Expression
 
     /// <summary>Le second membre de l'addition</summary>
     public Expression Second { get; set; }
+
+    internal override bool Validate(ValidationContext vc) => vc.Expressions.Contains(First) && vc.Expressions.Contains(Second);
 }

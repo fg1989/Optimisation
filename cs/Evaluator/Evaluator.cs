@@ -34,7 +34,14 @@ public static class Evaluator
     /// <param name="uniqueExternal">La valeur des unique external</param>
     /// <param name="orderedExternal">La valeur des ordered external</param>
     public static int Run(Application app, ExternalSource simpleExternal, ExternalSource uniqueExternal, ExternalSource orderedExternal)
-        => Evaluate(app.Main, new Context(Array.Empty<int>(), simpleExternal, uniqueExternal, orderedExternal));
+    {
+        if (!app.Validate())
+        {
+            Console.WriteLine("Invalid app");
+            return 0;
+        }
+        return Evaluate(app.Main, new Context(Array.Empty<int>(), simpleExternal, uniqueExternal, orderedExternal));
+    }
 
     private static int Evaluate(Fonction f, Context ctx)
     {

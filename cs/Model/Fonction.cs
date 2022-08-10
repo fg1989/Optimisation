@@ -25,14 +25,12 @@ public abstract class Fonction : CompilationSource
 
         return sb;
     }
+
+    internal abstract bool Validate(Application app);
 }
 
 /// <summary>Cette classe représente une fonction</summary>
 /// <typeparam name="ArgsNumber">Le nombre d'arguments de la fonction</typeparam>
-[SuppressMessage(
-    "Major Code Smell",
-    "S2326:Unused type parameters should be removed",
-    Justification = "Le paramètre de type sert uniquement de contrainte, il n'est donc pas utilisé")]
 public sealed class Fonction<ArgsNumber> : Fonction where ArgsNumber : CallArgs
 {
     /// <summary>Initializes a new instance of the <see cref="Fonction{ArgsNumber}"/> class.</summary>
@@ -47,5 +45,21 @@ public sealed class Fonction<ArgsNumber> : Fonction where ArgsNumber : CallArgs
         List<Expression> result = new(actions);
         result.Insert(0, first);
         return result;
+    }
+
+    internal override bool Validate(Application app)
+    {
+        ValidationContext vc = new ValidationContext<ArgsNumber>() { App = app };
+        foreach (Expression item in Actions)
+        {
+            if (vc.Expressions.Contains(item))
+                return false;
+
+            vc.Expressions.Add(item);
+
+            if (!item.Validate(vc))
+                return false;
+        }
+        return true;
     }
 }

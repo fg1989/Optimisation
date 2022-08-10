@@ -42,4 +42,14 @@ public class ConditionalExpression : Expression
 
         sb.Append(']');
     }
+
+    internal override bool Validate(ValidationContext vc)
+    {
+        if (NonZeroBranc == ZeroBranch || vc.Expressions.Contains(NonZeroBranc) || vc.Expressions.Contains(ZeroBranch))
+            return false;
+
+        vc.Expressions.Add(NonZeroBranc);
+        vc.Expressions.Add(ZeroBranch);
+        return vc.Expressions.Contains(Cond);
+    }
 }

@@ -5,4 +5,6 @@
 public class InvalidExpression : Expression
 {
     internal override void ToString(ColoredStringBuilder sb, VarDictIndex numIndex) => sb.Error().Append("invalidExpression").Normal();
+
+    internal override bool Validate(ValidationContext vc) => false;
 }
