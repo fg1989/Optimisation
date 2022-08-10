@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -16,6 +15,8 @@
     <EnableSingleFileAnalysis>true</EnableSingleFileAnalysis>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <NoWarn />
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -52,7 +53,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Evaluator\Evaluator.csproj" />
     <ProjectReference Include="..\Model\Model.csproj" />
   </ItemGroup>
 </Project>

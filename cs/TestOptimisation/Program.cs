@@ -1,5 +1,6 @@
 ﻿using Model;
 using System;
+using static Evaluator.Evaluator;
 
 namespace TestOptimisation;
 
@@ -9,10 +10,14 @@ public static class Program
     public static void Main()
     {
         Console.WriteLine("Calcul de la somme des entiers inférieurs");
-        SommeSimple().Print();
+        Application simple = SommeSimple();
+        simple.Print();
+        Console.WriteLine($"Resultat : {Run(simple)}");
 
         Console.WriteLine("Calcul de la somme des entiers inférieurs (optimisé)");
-        SommeOpti().Print();
+        Application opti = SommeOpti();
+        opti.Print();
+        Console.WriteLine($"Resultat : {Run(opti)}");
     }
 
     private static Application SommeSimple()

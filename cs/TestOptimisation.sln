@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32721.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestOptimisation", "TestOptimisation\TestOptimisation.csproj", "{89E28457-75C7-4FBF-BF64-B1C66D81B378}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Evaluator", "Evaluator\Evaluator.csproj", "{2FD4F0E2-88A4-415A-8D62-B36CF2580A65}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Model", "Model\Model.csproj", "{B2C3126D-27BA-4FFB-924D-FFFDF7E43B71}"
 EndProject
 Global
@@ -17,6 +19,10 @@ Global
 		{89E28457-75C7-4FBF-BF64-B1C66D81B378}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89E28457-75C7-4FBF-BF64-B1C66D81B378}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89E28457-75C7-4FBF-BF64-B1C66D81B378}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FD4F0E2-88A4-415A-8D62-B36CF2580A65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FD4F0E2-88A4-415A-8D62-B36CF2580A65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FD4F0E2-88A4-415A-8D62-B36CF2580A65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FD4F0E2-88A4-415A-8D62-B36CF2580A65}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B2C3126D-27BA-4FFB-924D-FFFDF7E43B71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B2C3126D-27BA-4FFB-924D-FFFDF7E43B71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2C3126D-27BA-4FFB-924D-FFFDF7E43B71}.Release|Any CPU.ActiveCfg = Release|Any CPU
