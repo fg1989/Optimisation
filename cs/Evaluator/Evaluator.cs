@@ -5,16 +5,17 @@ using System.Linq;
 
 namespace Evaluator;
 
-internal record struct Context(int[] Param)
+internal record struct Context
 {
     internal Context(int[] param, ExternalSource simpleExternal, ExternalSource uniqueExternal, ExternalSource orderedExternal)
-        : this(param)
     {
+        Param = param;
         SimpleExternal = simpleExternal;
         UniqueExternal = uniqueExternal;
         OrderedExternal = orderedExternal;
     }
 
+    internal int[] Param;
     internal readonly ExternalSource SimpleExternal;
     internal readonly ExternalSource UniqueExternal;
     internal readonly ExternalSource OrderedExternal;

@@ -5,3 +5,7 @@ cs/TestOptimisation/bin/
 cs/TestOptimisation/obj/
 cs/Evaluator/obj/
 cs/Evaluator/bin/
+
+hs/.vscode/
+hs/cabal.project.local
+hs/**/dist-newstyle/

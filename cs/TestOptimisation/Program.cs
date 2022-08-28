@@ -50,6 +50,7 @@ public static class Program
 
         ParamExpression param2 = new(0);
         ConditionalExpression cond = new(param2, new ConstExpression(0), FuncCall.Create(recursion, param2));
+
         Fonction<Args1> sum = new(param2, cond);
 
         recursiveCall.Func = sum;
