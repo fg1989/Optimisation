@@ -51,3 +51,4 @@ library
     exposed-modules: Model.Model, Evaluator.Evaluator, Evaluator.EvaluationContext
     build-depends:
           base
+        , mtl
