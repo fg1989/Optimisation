@@ -12,7 +12,6 @@ newtype ParamIndex = ParamIndex {paramIndex :: Int} deriving (Show, Eq, Ord, Num
 
 data ExternalType
   = SimpleExternal
-  | UniqueExternal
   | OrderedExternal
   deriving (Show)
 

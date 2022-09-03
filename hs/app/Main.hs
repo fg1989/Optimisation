@@ -8,7 +8,7 @@ sommeSimple :: Application
 sommeSimple =
   Application
     ( Fonction
-        (ParamExpression 0 :| [FuncCall 0 [0]])
+        (ExternalExpression SimpleExternal 0 :| [FuncCall 0 [0]])
         1
     )
     [ Fonction
@@ -23,4 +23,4 @@ sommeSimple =
     ]
 
 main :: IO ()
-main = print (runParam sommeSimple [5])
+main = run $ evalParam sommeSimple [5]

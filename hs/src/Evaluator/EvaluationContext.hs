@@ -5,6 +5,7 @@ import Model.Model
 
 newtype Error = Error String deriving (Show)
 
+-- TODO : implementer source
 data GlobalContext = GlobalContext {fonctions :: [Fonction], source :: Int}
 
 data PreFunctionContext = PreFunctionContext {param :: [Int], globalContext :: GlobalContext}
