@@ -37,7 +37,7 @@ executable hs-exe
 
     -- Other library packages from which modules are imported.
     build-depends:
-          base ^>=4.14.3.0
+          base
         , hs
 
     -- Directories containing source files.
@@ -50,4 +50,4 @@ library
     hs-source-dirs: src
     exposed-modules: Model.Model, Evaluator.Evaluator, Evaluator.EvaluationContext
     build-depends:
-          base ^>=4.14.3.0
+          base
