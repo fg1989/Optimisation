@@ -64,14 +64,14 @@ evalExpression (ConditionalExpression cond notNullExpression nullExpression) con
   let expressionSelector x = if x == 0 then nullExpression else notNullExpression
    in readContext context cond >>= (\x -> evalExpression (expressionSelector x) context)
 --
-evalExpression (FuncCall funcIndex params) context =
+evalExpression (FuncCall funcIndex params) context@(FunctionContext _  _ (PreFunctionContext _ ctx)) =
   do
-    func <- readFuncInContext'' context funcIndex
+    func <- readFuncInContext ctx funcIndex
     param <- mapM (readContext context) params
-    runFonction func (globalContext $ initContext context) param
+    runFonction func ctx param
 --
-evalExpression expr context =
-  evalExpressionWithPreContext expr (initContext context)
+evalExpression expr (FunctionContext _ _ context) =
+  evalExpressionWithPreContext expr context
 
 evalExpressionWithPreContext :: EvalContext m => Expression -> PreFunctionContext -> m Int
 evalExpressionWithPreContext InvalidExpression _ = throwError (Error "Invalid Expression")
@@ -81,8 +81,8 @@ evalExpressionWithPreContext (ConstExpression val) _ = return val
 evalExpressionWithPreContext (ParamExpression paramIndex) context =
   readParamInContext context paramIndex
 --
-evalExpressionWithPreContext (FuncCall funcIndex []) context =
-  readFuncInContext' context funcIndex >>= (\x -> runFonction x (globalContext context) [])
+evalExpressionWithPreContext (FuncCall funcIndex []) (PreFunctionContext _ context) =
+  readFuncInContext context funcIndex >>= (\x -> runFonction x context [])
 --
 evalExpressionWithPreContext (ExternalExpression _ _) _ = liftIO readValue
 --
