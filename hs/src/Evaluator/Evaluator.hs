@@ -4,7 +4,7 @@
 module Evaluator.Evaluator
   ( eval,
     evalParam,
-    run,
+    run
   )
 where
 
@@ -14,21 +14,20 @@ import Evaluator.Helper (Error (..), readValue)
 import Model.Model (Application (..), Expression (..), Fonction (..))
 import Text.Read (readMaybe)
 
-newtype Program = Program {mainAction :: ExceptT Error IO Int}
-
-run :: Program -> IO ()
-run (Program main) =
+run :: ExceptT Error IO Int -> IO ()
+run main =
   runExceptT main >>= internalRun
 
 internalRun :: Either Error Int -> IO ()
 internalRun (Left (Error e)) = putStrLn e
 internalRun (Right program) = putStrLn ("Resultat : " ++ show program)
 
-eval :: Application -> Program
+eval :: EvalContext m => Application -> m Int
 eval app = evalParam app []
 
-evalParam :: Application -> [Int] -> Program
-evalParam (Application mainFunc otherFunc) params = Program $ runFonction mainFunc (GlobalContext otherFunc 0) params
+evalParam :: EvalContext m => Application -> [Int] -> m Int
+evalParam (Application mainFunc otherFunc) =
+  runFonction mainFunc (GlobalContext otherFunc 0)
 
 runFonction :: EvalContext m => Fonction -> GlobalContext -> [Int] -> m Int
 runFonction (Fonction (first :| others) paramCount) context funcParam
@@ -54,24 +53,21 @@ evalExpressionInContext context expr =
     newVal <- evalExpression expr context
     return $ evolveContext context newVal
 
-liftEither ::  EvalContext m => Either Error n -> m n
-liftEither = either throwError return
-
 evalExpression :: EvalContext m => Expression -> FunctionContext -> m Int
 evalExpression (AdditionExpression first second) context =
-  liftEither $ do
+  do
     param1 <- readContext context first
     param2 <- readContext context second
     return $ param1 + param2
 --
 evalExpression (ConditionalExpression cond notNullExpression nullExpression) context =
   let expressionSelector x = if x == 0 then nullExpression else notNullExpression
-   in liftEither (readContext context cond) >>= (\x -> evalExpression (expressionSelector x) context)
+   in readContext context cond >>= (\x -> evalExpression (expressionSelector x) context)
 --
 evalExpression (FuncCall funcIndex params) context =
   do
-    func <- liftEither $ readFuncInContext'' context funcIndex
-    param <- liftEither $ mapM (readContext context) params
+    func <- readFuncInContext'' context funcIndex
+    param <- mapM (readContext context) params
     runFonction func (globalContext $ initContext context) param
 --
 evalExpression expr context =
@@ -83,10 +79,10 @@ evalExpressionWithPreContext InvalidExpression _ = throwError (Error "Invalid Ex
 evalExpressionWithPreContext (ConstExpression val) _ = return val
 --
 evalExpressionWithPreContext (ParamExpression paramIndex) context =
-  liftEither $ readParamInContext context paramIndex
+  readParamInContext context paramIndex
 --
 evalExpressionWithPreContext (FuncCall funcIndex []) context =
-  liftEither (readFuncInContext' context funcIndex) >>= (\x -> runFonction x (globalContext context) [])
+  readFuncInContext' context funcIndex >>= (\x -> runFonction x (globalContext context) [])
 --
 evalExpressionWithPreContext (ExternalExpression _ _) _ = liftIO readValue
 --

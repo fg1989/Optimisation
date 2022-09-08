@@ -1,4 +1,8 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Evaluator.Helper where
+
+import Control.Monad.Except (MonadError (throwError))
 
 newtype Error = Error String deriving (Show, Eq)
 
@@ -13,12 +17,12 @@ _readValue :: Maybe Int -> IO Int
 _readValue Nothing = readValue
 _readValue (Just val) = return val
 
-safeRead :: [a] -> Word -> Error -> Either Error a
+safeRead :: MonadError Error m => [a] -> Word -> Error -> m a
 safeRead list index errorMessage =
   let result = safeRead' list index
    in case result of
-        Nothing -> Left errorMessage
-        Just a -> Right a
+        Nothing -> throwError errorMessage
+        Just a -> return a
 
 safeRead' :: [a] -> Word -> Maybe a
 safeRead' [] _ = Nothing

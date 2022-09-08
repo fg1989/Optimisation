@@ -1,5 +1,8 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Evaluator.EvaluationContext where
 
+import Control.Monad.Except (MonadError (throwError))
 import Evaluator.Helper (Error (..), safeRead)
 import Model.Model
   ( ExpressionIndex (..),
@@ -25,26 +28,26 @@ evolveContext context@(FunctionContext currentIndex currentStack _) val =
   context {index = currentIndex + 1, stack = val :| toList currentStack}
 
 -- Existe il une meilleur manière d'implémenter cette méthode (éviter le toList et le lenght) ?
-readContext :: FunctionContext -> ExpressionIndex -> Either Error Int
+readContext :: MonadError Error m => FunctionContext -> ExpressionIndex -> m Int
 readContext context (ExpressionIndex index) =
   safeRead (toList $ stack context) (fromIntegral (length (stack context)) - index - 1) (Error "Invalid index expression")
 
-readFuncInContext :: GlobalContext -> FonctionIndex -> Either Error Fonction
+readFuncInContext :: MonadError Error m => GlobalContext -> FonctionIndex -> m Fonction
 readFuncInContext context (FonctionIndex index) =
   safeRead (fonctions context) index (Error "Invalid func index")
 
 -- Peut on éviter la duplication
-readFuncInContext' :: PreFunctionContext -> FonctionIndex -> Either Error Fonction
+readFuncInContext' :: MonadError Error m => PreFunctionContext -> FonctionIndex -> m Fonction
 readFuncInContext' = readFuncInContext . globalContext
 
 -- Peut on éviter la duplication
-readFuncInContext'' :: FunctionContext -> FonctionIndex -> Either Error Fonction
+readFuncInContext'' :: MonadError Error m => FunctionContext -> FonctionIndex -> m Fonction
 readFuncInContext'' = readFuncInContext' . initContext
 
-readParamInContext :: PreFunctionContext -> ParamIndex -> Either Error Int
+readParamInContext :: MonadError Error m => PreFunctionContext -> ParamIndex -> m Int
 readParamInContext context (ParamIndex index) =
   safeRead (param context) index (Error "Invalid param index")
 
 -- Peut on éviter la duplication
-readParamInContext' :: FunctionContext -> ParamIndex -> Either Error Int
+readParamInContext' :: MonadError Error m => FunctionContext -> ParamIndex -> m Int
 readParamInContext' = readParamInContext . initContext
