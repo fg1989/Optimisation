@@ -12,12 +12,36 @@ import Model.Model
   )
 
 -- TODO : implementer source
-data GlobalContext = GlobalContext {fonctions :: [Fonction], source :: Int} deriving (Show)
 
-data PreFunctionContext = PreFunctionContext {param :: [Int], globalContext :: GlobalContext} deriving (Show)
+-- Possibilitée de faire plus simple ?
+class FonctionContext ctx where
+  fonctions :: ctx -> [Fonction]
+  source :: ctx -> Int
+
+class ParamContext ctx where
+  param :: ctx -> [Int]
+
+data GlobalContext = GlobalContext [Fonction] Int deriving (Show)
+
+data PreFunctionContext = PreFunctionContext [Int] GlobalContext deriving (Show)
 
 -- structure de donneée plus efficace que la liste pour l'accès indexé (arbre ?) ?
 data FunctionContext = FunctionContext {index :: ExpressionIndex, stack :: NonEmpty Int, initContext :: PreFunctionContext} deriving (Show)
+
+instance FonctionContext GlobalContext where
+  fonctions (GlobalContext func _) = func
+  source (GlobalContext _ src) = src
+
+instance FonctionContext PreFunctionContext where
+  fonctions (PreFunctionContext _ ctx) = fonctions ctx
+  source (PreFunctionContext _ ctx) = source ctx
+
+instance FonctionContext FunctionContext where
+  fonctions (FunctionContext _ _ ctx) = fonctions ctx
+  source (FunctionContext _ _ ctx) = source ctx
+
+instance ParamContext PreFunctionContext where
+  param (PreFunctionContext para _) = para
 
 initEvaluationContext :: Int -> PreFunctionContext -> FunctionContext
 initEvaluationContext val = FunctionContext 0 $ val :| []
@@ -32,22 +56,11 @@ readContext :: MonadError Error m => FunctionContext -> ExpressionIndex -> m Int
 readContext context (ExpressionIndex index) =
   safeRead (toList $ stack context) (fromIntegral (length (stack context)) - index - 1) (Error "Invalid index expression")
 
-readFuncInContext :: MonadError Error m => GlobalContext -> FonctionIndex -> m Fonction
+-- Est ce que changer l'ordre des deux contraintes change quelque chose ?
+readFuncInContext :: MonadError Error m => FonctionContext c => c -> FonctionIndex -> m Fonction
 readFuncInContext context (FonctionIndex index) =
   safeRead (fonctions context) index (Error "Invalid func index")
 
--- Peut on éviter la duplication
-readFuncInContext' :: MonadError Error m => PreFunctionContext -> FonctionIndex -> m Fonction
-readFuncInContext' = readFuncInContext . globalContext
-
--- Peut on éviter la duplication
-readFuncInContext'' :: MonadError Error m => FunctionContext -> FonctionIndex -> m Fonction
-readFuncInContext'' = readFuncInContext' . initContext
-
-readParamInContext :: MonadError Error m => PreFunctionContext -> ParamIndex -> m Int
+readParamInContext :: MonadError Error m => ParamContext c => c -> ParamIndex -> m Int
 readParamInContext context (ParamIndex index) =
   safeRead (param context) index (Error "Invalid param index")
-
--- Peut on éviter la duplication
-readParamInContext' :: MonadError Error m => FunctionContext -> ParamIndex -> m Int
-readParamInContext' = readParamInContext . initContext
