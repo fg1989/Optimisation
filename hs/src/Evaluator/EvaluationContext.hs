@@ -3,7 +3,7 @@ module Evaluator.EvaluationContext where
 import Data.List.NonEmpty
 import Model.Model
 
-newtype Error = Error String deriving (Show)
+newtype Error = Error String deriving (Show, Eq)
 
 -- TODO : implementer source
 data GlobalContext = GlobalContext {fonctions :: [Fonction], source :: Int}
