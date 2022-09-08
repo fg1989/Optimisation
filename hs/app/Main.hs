@@ -1,8 +1,11 @@
 module Main where
 
-import Data.List.NonEmpty
-import Evaluator.Evaluator
+import Evaluator.Evaluator (evalParam, run)
 import Model.Model
+    ( Expression(..),
+      Application(..),
+      Fonction(..),
+      ExternalType(..) )
 
 sommeSimple :: Application
 sommeSimple =

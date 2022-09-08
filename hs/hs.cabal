@@ -37,18 +37,19 @@ executable hs-exe
 
     -- Other library packages from which modules are imported.
     build-depends:
-          base
-        , hs
+          base,hs,relude
 
     -- Directories containing source files.
     hs-source-dirs:   app
 
     -- Base language which the package is written in.
     default-language: Haskell2010
+    mixins: base hiding (Prelude), relude (Relude as Prelude), relude
 
 library
     hs-source-dirs: src
     exposed-modules: Model.Model, Evaluator.Evaluator, Evaluator.EvaluationContext
+    other-modules: Evaluator.Helper
     build-depends:
-          base
-        , mtl
+          base,mtl,relude
+    mixins: base hiding (Prelude), relude (Relude as Prelude), relude

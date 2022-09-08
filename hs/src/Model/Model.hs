@@ -2,13 +2,11 @@
 
 module Model.Model where
 
-import Data.List.NonEmpty
+newtype FonctionIndex = FonctionIndex {funcIndex :: Word} deriving (Show, Eq, Ord, Num)
 
-newtype FonctionIndex = FonctionIndex {funcIndex :: Int} deriving (Show, Eq, Ord, Num)
+newtype ExpressionIndex = ExpressionIndex {exprIndex :: Word} deriving (Show, Eq, Ord, Num)
 
-newtype ExpressionIndex = ExpressionIndex {exprIndex :: Int} deriving (Show, Eq, Ord, Num)
-
-newtype ParamIndex = ParamIndex {paramIndex :: Int} deriving (Show, Eq, Ord, Num)
+newtype ParamIndex = ParamIndex {paramIndex :: Word} deriving (Show, Eq, Ord, Num)
 
 data ExternalType
   = SimpleExternal
