@@ -29,31 +29,31 @@ evalParam :: EvalContext m => Application -> [Int] -> m Int
 evalParam (Application mainFunc otherFunc) =
   runFonction mainFunc (GlobalContext otherFunc 0)
 
-runFonction :: EvalContext m => Fonction -> GlobalContext -> [Int] -> m Int
+runFonction :: (EvalContext m, FonctionContext c) => Fonction -> c -> [Int] -> m Int
 runFonction (Fonction (first :| others) paramCount) context funcParam
   | Prelude.length funcParam /= paramCount = throwError $ Error "Invalid number of call arguments"
   | otherwise =
-    let preFuncContext = PreFunctionContext funcParam context
+    let preFuncContext = CallContext funcParam context
      in do
           firstValue <- evalExpressionWithPreContext first preFuncContext
           evalExpressions others (initEvaluationContext firstValue preFuncContext)
 
 type EvalContext m = (MonadError Error m, MonadIO m)
 
-evalExpressions :: EvalContext m => [Expression] -> FunctionContext -> m Int
+evalExpressions :: (EvalContext m, FonctionContext c, ParamContext c) => [Expression] -> EvaluationContext c -> m Int
 evalExpressions (current : nexts) context =
   do
     val <- evalExpressionInContext context current
     evalExpressions nexts val
-evalExpressions [] (FunctionContext _ (final :| other) _) = return final
+evalExpressions [] (EvaluationContext _ (final :| other) _) = return final
 
-evalExpressionInContext :: EvalContext m => FunctionContext -> Expression -> m FunctionContext
+evalExpressionInContext :: (EvalContext m, FonctionContext c, ParamContext c) => EvaluationContext c -> Expression -> m (EvaluationContext c)
 evalExpressionInContext context expr =
   do
     newVal <- evalExpression expr context
     return $ evolveContext context newVal
 
-evalExpression :: EvalContext m => Expression -> FunctionContext -> m Int
+evalExpression :: (EvalContext m, FonctionContext c, ParamContext c) => Expression -> EvaluationContext c -> m Int
 evalExpression (AdditionExpression first second) context =
   do
     param1 <- readContext context first
@@ -64,16 +64,16 @@ evalExpression (ConditionalExpression cond notNullExpression nullExpression) con
   let expressionSelector x = if x == 0 then nullExpression else notNullExpression
    in readContext context cond >>= (\x -> evalExpression (expressionSelector x) context)
 --
-evalExpression (FuncCall funcIndex params) context@(FunctionContext _ _ (PreFunctionContext _ ctx)) =
+evalExpression (FuncCall funcIndex params) context =
   do
     func <- readFuncInContext context funcIndex
     param <- mapM (readContext context) params
-    runFonction func ctx param
+    runFonction func context param
 --
 evalExpression expr context =
   evalExpressionWithPreContext expr (initContext context)
 
-evalExpressionWithPreContext :: EvalContext m => Expression -> PreFunctionContext -> m Int
+evalExpressionWithPreContext :: (EvalContext m, FonctionContext c, ParamContext c) => Expression -> c -> m Int
 evalExpressionWithPreContext InvalidExpression _ = throwError (Error "Invalid Expression")
 --
 evalExpressionWithPreContext (ConstExpression val) _ = return val
@@ -81,8 +81,8 @@ evalExpressionWithPreContext (ConstExpression val) _ = return val
 evalExpressionWithPreContext (ParamExpression paramIndex) context =
   readParamInContext context paramIndex
 --
-evalExpressionWithPreContext (FuncCall funcIndex []) context@(PreFunctionContext _ ctx) =
-  readFuncInContext context funcIndex >>= (\x -> runFonction x ctx [])
+evalExpressionWithPreContext (FuncCall funcIndex []) context =
+  readFuncInContext context funcIndex >>= (\x -> runFonction x context [])
 --
 evalExpressionWithPreContext (ExternalExpression _ _) _ = liftIO readValue
 --
