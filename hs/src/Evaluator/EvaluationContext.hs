@@ -27,10 +27,10 @@ evolveContext :: FunctionContext -> Int -> FunctionContext
 evolveContext context@(FunctionContext currentIndex currentStack _) val =
   context {index = currentIndex + 1, stack = val :| toList currentStack}
 
--- Existe il une meilleur manière d'implémenter cette méthode (éviter le toList et le lenght) ?
+-- Existe il une meilleur manière d'implémenter cette méthode (éviter le toList) ?
 readContext :: MonadError Error m => FunctionContext -> ExpressionIndex -> m Int
-readContext context (ExpressionIndex index) =
-  safeRead (toList $ stack context) (fromIntegral (length (stack context)) - index - 1) (Error "Invalid index expression")
+readContext context readIndex =
+  safeRead (toList $ stack context) (exprIndex $ index context - readIndex) (Error "Invalid index expression")
 
 readFuncInContext :: MonadError Error m => GlobalContext -> FonctionIndex -> m Fonction
 readFuncInContext context (FonctionIndex index) =

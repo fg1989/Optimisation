@@ -27,4 +27,4 @@ safeRead list index errorMessage =
 safeRead' :: [a] -> Word -> Maybe a
 safeRead' [] _ = Nothing
 safeRead' (first : _) 0 = Just first
-safeRead' (_ : others) index = safeRead' others $ index -1
+safeRead' (_ : others) index = safeRead' others $ index - 1
