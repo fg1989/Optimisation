@@ -18,7 +18,7 @@ class FonctionContext ctx where
   fonctions :: ctx -> [Fonction]
   source :: ctx -> Int
 
-class ParamContext ctx where
+class (FonctionContext ctx) => ParamContext ctx where
   param :: ctx -> [Int]
 
 data GlobalContext = GlobalContext [Fonction] Int deriving (Show)
@@ -40,7 +40,7 @@ instance (FonctionContext g) => FonctionContext (EvaluationContext g) where
   fonctions (EvaluationContext _ _ ctx) = fonctions ctx
   source (EvaluationContext _ _ ctx) = source ctx
 
-instance ParamContext (CallContext g) where
+instance (FonctionContext g) => ParamContext (CallContext g) where
   param (CallContext para _) = para
 
 initEvaluationContext :: Int -> CallContext g -> EvaluationContext (CallContext g)

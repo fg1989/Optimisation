@@ -40,20 +40,20 @@ runFonction (Fonction (first :| others) paramCount) context funcParam
 
 type EvalContext m = (MonadError Error m, MonadIO m)
 
-evalExpressions :: (EvalContext m, FonctionContext c, ParamContext c) => [Expression] -> EvaluationContext c -> m Int
+evalExpressions :: (EvalContext m, ParamContext c) => [Expression] -> EvaluationContext c -> m Int
 evalExpressions (current : nexts) context =
   do
     val <- evalExpressionInContext context current
     evalExpressions nexts val
 evalExpressions [] (EvaluationContext _ (final :| other) _) = return final
 
-evalExpressionInContext :: (EvalContext m, FonctionContext c, ParamContext c) => EvaluationContext c -> Expression -> m (EvaluationContext c)
+evalExpressionInContext :: (EvalContext m, ParamContext c) => EvaluationContext c -> Expression -> m (EvaluationContext c)
 evalExpressionInContext context expr =
   do
     newVal <- evalExpression expr context
     return $ evolveContext context newVal
 
-evalExpression :: (EvalContext m, FonctionContext c, ParamContext c) => Expression -> EvaluationContext c -> m Int
+evalExpression :: (EvalContext m, ParamContext c) => Expression -> EvaluationContext c -> m Int
 evalExpression (AdditionExpression first second) context =
   do
     param1 <- readContext context first
@@ -73,7 +73,7 @@ evalExpression (FuncCall funcIndex params) context =
 evalExpression expr context =
   evalExpressionWithPreContext expr (initContext context)
 
-evalExpressionWithPreContext :: (EvalContext m, FonctionContext c, ParamContext c) => Expression -> c -> m Int
+evalExpressionWithPreContext :: (EvalContext m, ParamContext c) => Expression -> c -> m Int
 evalExpressionWithPreContext InvalidExpression _ = throwError (Error "Invalid Expression")
 --
 evalExpressionWithPreContext (ConstExpression val) _ = return val
