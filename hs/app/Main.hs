@@ -2,10 +2,11 @@ module Main where
 
 import Evaluator.Evaluator (evalParam, run)
 import Model.Model
-    ( Expression(..),
-      Application(..),
-      Fonction(..),
-      ExternalType(..) )
+  ( Application (..),
+    Expression (..),
+    ExternalType (..),
+    Fonction (..),
+  )
 
 sommeSimple :: Application
 sommeSimple =

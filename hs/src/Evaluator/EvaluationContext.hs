@@ -54,18 +54,15 @@ instance (ParamContext c) => ParamContext (RunContext c) where
 instance (ParamContext c) => EvaluationContext (RunContext c) where
   index (RunContext i _ _) = i
   stack (RunContext _ s _) = s
-
-  -- Existe il une meilleure manière de faire évoluer le contexte (éviter le toList) ?
   evolveContext (RunContext index stack ctx) val = RunContext (index + 1) (val :| toList stack) ctx
 
 -- Comment passer cette fonction dans la classe ?
 initEvaluationContext :: ParamContext c => Int -> c -> RunContext c
 initEvaluationContext val = RunContext 0 $ val :| []
 
--- Existe il une meilleur manière d'implémenter cette méthode (éviter le toList et le lenght) ?
 readContext :: (MonadError Error m, EvaluationContext g) => g -> ExpressionIndex -> m Int
-readContext context (ExpressionIndex index) =
-  safeRead (toList $ stack context) (fromIntegral (length (stack context)) - index - 1) (Error "Invalid index expression")
+readContext context readIndex =
+  safeRead (toList $ stack context) (exprIndex $ index context - readIndex) (Error "Invalid index expression")
 
 readFuncInContext :: (MonadError Error m, FonctionContext c) => c -> FonctionIndex -> m Fonction
 readFuncInContext context (FonctionIndex index) =
