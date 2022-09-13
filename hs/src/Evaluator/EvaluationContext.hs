@@ -26,6 +26,9 @@ class (ParamContext ctx) => EvaluationContext ctx where
   stack :: ctx -> NonEmpty Int
   evolveContext :: ctx -> Int -> ctx
 
+class EvaluationContext' ctx where
+  initEvaluationContext :: ParamContext c => Int -> c -> ctx c
+
 data GlobalContext = GlobalContext [Fonction] Int deriving (Show)
 
 data CallContext g = CallContext [Int] g deriving (Show)
@@ -56,9 +59,8 @@ instance (ParamContext c) => EvaluationContext (RunContext c) where
   stack (RunContext _ s _) = s
   evolveContext (RunContext index stack ctx) val = RunContext (index + 1) (val :| toList stack) ctx
 
--- Comment passer cette fonction dans la classe ?
-initEvaluationContext :: ParamContext c => Int -> c -> RunContext c
-initEvaluationContext val = RunContext 0 $ val :| []
+instance EvaluationContext' RunContext where
+  initEvaluationContext val = RunContext 0 $ val :| []
 
 readContext :: (MonadError Error m, EvaluationContext g) => g -> ExpressionIndex -> m Int
 readContext context readIndex =

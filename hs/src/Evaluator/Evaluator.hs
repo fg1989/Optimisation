@@ -29,6 +29,10 @@ evalParam :: EvalContext m => Application -> [Int] -> m Int
 evalParam (Application mainFunc otherFunc) =
   runFonction mainFunc (GlobalContext otherFunc 0)
 
+-- Comment supprimer cette fonction
+tmpInit :: (ParamContext c) => Int -> c -> RunContext c
+tmpInit = initEvaluationContext
+
 runFonction :: (EvalContext m, FonctionContext c) => Fonction -> c -> [Int] -> m Int
 runFonction (Fonction (first :| others) paramCount) context funcParam
   | Prelude.length funcParam /= paramCount = throwError $ Error "Invalid number of call arguments"
@@ -36,7 +40,8 @@ runFonction (Fonction (first :| others) paramCount) context funcParam
     let preFuncContext = CallContext funcParam context
      in do
           firstValue <- evalExpressionWithPreContext first preFuncContext
-          evalExpressions others (initEvaluationContext firstValue preFuncContext)
+          let tmp = tmpInit firstValue preFuncContext
+          evalExpressions others tmp
 
 type EvalContext m = (MonadError Error m, MonadIO m)
 

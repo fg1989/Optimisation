@@ -1,0 +1,13 @@
+@startuml Evaluation
+
+hide empty members
+
+interface FonctionContext
+interface ParamContext implements FonctionContext
+interface EvaluationContext implements ParamContext
+
+class GlobalContext implements FonctionContext
+class CallContext extends GlobalContext implements ParamContext
+class RunContext extends CallContext implements EvaluationContext
+
+@enduml
