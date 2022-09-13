@@ -10,7 +10,7 @@ where
 
 import Control.Monad.Except (MonadError (throwError))
 import Evaluator.EvaluationContext
-import Evaluator.Helper (Error (..), readValue)
+import Evaluator.Helper (Error (..), readValue, MaybeError)
 import Model.Model (Application (..), Expression (..), Fonction (..), InstructionList (..), SimpleExpression (..))
 import Text.Read (readMaybe)
 
@@ -43,7 +43,7 @@ runFonction (Fonction (InstructionList first others) paramCount) context funcPar
           let tmp = tmpInit firstValue preFuncContext
           evalExpressions others tmp
 
-type EvalContext m = (MonadError Error m, MonadIO m)
+type EvalContext m = (MaybeError m, MonadIO m)
 
 evalExpressions :: (EvalContext m, EvaluationContext c) => [Expression] -> c -> m Int
 evalExpressions (current : nexts) context =

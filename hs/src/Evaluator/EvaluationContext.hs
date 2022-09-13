@@ -3,7 +3,7 @@
 module Evaluator.EvaluationContext where
 
 import Control.Monad.Except (MonadError (throwError))
-import Evaluator.Helper (Error (..), safeRead)
+import Evaluator.Helper (Error (..), safeRead, MaybeError)
 import Model.Model
   ( ExpressionIndex (..),
     Fonction,
@@ -11,9 +11,11 @@ import Model.Model
     ParamIndex (..),
   )
 
+
 -- TODO : implementer source
 
 -- Possibilitée de faire plus simple ?
+
 class FonctionContext ctx where
   fonctions :: ctx -> [Fonction]
   source :: ctx -> Int
@@ -26,6 +28,8 @@ class (ParamContext ctx) => EvaluationContext ctx where
   stack :: ctx -> NonEmpty Int
   evolveContext :: ctx -> Int -> ctx
 
+-- Le fait que chaque contexte contienne un autre contexte est un détail d'implémentation,
+-- il ne devrait pas apparaitre dans l'interface
 class EvaluationContext' ctx where
   initEvaluationContext :: ParamContext c => Int -> c -> ctx c
 
@@ -62,14 +66,14 @@ instance (ParamContext c) => EvaluationContext (RunContext c) where
 instance EvaluationContext' RunContext where
   initEvaluationContext val = RunContext 0 $ val :| []
 
-readContext :: (MonadError Error m, EvaluationContext g) => g -> ExpressionIndex -> m Int
+readContext :: (MaybeError m, EvaluationContext g) => g -> ExpressionIndex -> m Int
 readContext context readIndex =
   safeRead (toList $ stack context) (exprIndex $ index context - readIndex) (Error "Invalid index expression")
 
-readFuncInContext :: (MonadError Error m, FonctionContext c) => c -> FonctionIndex -> m Fonction
+readFuncInContext :: (MaybeError m, FonctionContext c) => c -> FonctionIndex -> m Fonction
 readFuncInContext context (FonctionIndex index) =
   safeRead (fonctions context) index (Error "Invalid func index")
 
-readParamInContext :: (MonadError Error m, ParamContext c) => c -> ParamIndex -> m Int
+readParamInContext :: (MaybeError m, ParamContext c) => c -> ParamIndex -> m Int
 readParamInContext context (ParamIndex index) =
   safeRead (param context) index (Error "Invalid param index")
