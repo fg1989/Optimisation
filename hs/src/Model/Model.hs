@@ -13,17 +13,24 @@ data ExternalType
   | OrderedExternal
   deriving (Show)
 
-data Expression
+data SimpleExpression
   = ConstExpression Int
-  | AdditionExpression ExpressionIndex ExpressionIndex
-  | ConditionalExpression ExpressionIndex Expression Expression
   | InvalidExpression
   | ParamExpression ParamIndex
   | ExternalExpression ExternalType ExpressionIndex
-  | -- Comment valider que le nombre de parametre de la fonction est egal aux nombres de parametres passés ?
-    FuncCall FonctionIndex [ExpressionIndex]
+  | SimpleCall FonctionIndex
   deriving (Show)
 
-data Fonction = Fonction (NonEmpty Expression) Int deriving (Show)
+data Expression
+  = AdditionExpression ExpressionIndex ExpressionIndex
+  | ConditionalExpression ExpressionIndex Expression Expression
+  | Simple SimpleExpression
+  | -- Comment valider que le nombre de parametre de la fonction est egal aux nombres de parametres passés ?
+    FuncCall FonctionIndex (NonEmpty ExpressionIndex)
+  deriving (Show)
+
+data InstructionList = InstructionList SimpleExpression [Expression] deriving (Show)
+
+data Fonction = Fonction InstructionList Int deriving (Show)
 
 data Application = Application Fonction [Fonction] deriving (Show)
