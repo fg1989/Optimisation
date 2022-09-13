@@ -2,12 +2,12 @@
 
 hide empty members
 
-interface FonctionContext
-interface ParamContext implements FonctionContext
-interface EvaluationContext implements ParamContext
+interface ProgramContext
+interface FonctionContext implements ProgramContext
+interface EvaluationContext implements FonctionContext
 
-class GlobalContext implements FonctionContext
-class CallContext extends GlobalContext implements ParamContext
-class RunContext extends CallContext implements EvaluationContext
+class ProgramContext1 implements ProgramContext
+class FonctionContext1 extends ProgramContext1 implements FonctionContext
+class EvaluationContext1 extends FonctionContext1 implements EvaluationContext
 
 @enduml

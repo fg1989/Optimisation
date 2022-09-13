@@ -3,7 +3,7 @@
 module Evaluator.EvaluationContext where
 
 import Control.Monad.Except (MonadError (throwError))
-import Evaluator.Helper (Error (..), safeRead, MaybeError)
+import Evaluator.Helper (Error (..), MaybeError, safeRead)
 import Model.Model
   ( ExpressionIndex (..),
     Fonction,
@@ -11,69 +11,71 @@ import Model.Model
     ParamIndex (..),
   )
 
-
 -- TODO : implementer source
 
 -- Possibilitée de faire plus simple ?
 
-class FonctionContext ctx where
-  fonctions :: ctx -> [Fonction]
-  source :: ctx -> Int
-
-class (FonctionContext ctx) => ParamContext ctx where
-  param :: ctx -> [Int]
-
-class (ParamContext ctx) => EvaluationContext ctx where
-  index :: ctx -> ExpressionIndex
-  stack :: ctx -> NonEmpty Int
-  evolveContext :: ctx -> Int -> ctx
-
 -- Le fait que chaque contexte contienne un autre contexte est un détail d'implémentation,
 -- il ne devrait pas apparaitre dans l'interface
+
+class ProgramContext ctx where
+  readFuncFromContext :: (MaybeError m) => ctx -> FonctionIndex -> m Fonction
+
+class (ProgramContext ctx) => FonctionContext ctx where
+  readParamFromContext :: (MaybeError m) => ctx -> ParamIndex -> m Int
+
+class (FonctionContext ctx) => EvaluationContext ctx where
+  evolveContext :: ctx -> Int -> ctx
+  readValueFromContext :: (MaybeError m) => ctx -> ExpressionIndex -> m Int
+  getFinalValue :: ctx -> Int
+
+-- Possibilité de mettre une contrainte (FonctionContext i) => (EvaluationContext (ctx i)) =>
 class EvaluationContext' ctx where
-  initEvaluationContext :: ParamContext c => Int -> c -> ctx c
+  initEvaluationContext :: FonctionContext c => Int -> c -> ctx c
 
-data GlobalContext = GlobalContext [Fonction] Int deriving (Show)
+class FonctionContext' ctx where
+  initFonctionContext :: ProgramContext c => [Int] -> c -> ctx c
 
-data CallContext g = CallContext [Int] g deriving (Show)
+class ProgramContext' ctx where
+  initProgramContext :: [Fonction] -> Int -> ctx
+
+data ProgramContext'' = ProgramContext'' [Fonction] Int deriving (Show)
+
+data FonctionContext'' g = FonctionContext'' [Int] g deriving (Show)
 
 -- structure de donneée plus efficace que la liste pour l'accès indexé (arbre ?) ?
-data RunContext c = RunContext ExpressionIndex (NonEmpty Int) c deriving (Show)
+data EvaluationContext'' c = EvaluationContext'' ExpressionIndex (NonEmpty Int) c deriving (Show)
 
-instance FonctionContext GlobalContext where
-  fonctions (GlobalContext func _) = func
-  source (GlobalContext _ src) = src
+-- Correct d'utiliser ce type de nommage vu que la classe n'a qu'une instance ?
+instance ProgramContext ProgramContext'' where
+  readFuncFromContext (ProgramContext'' func _) (FonctionIndex index) =
+    safeRead func index (Error "Invalid func index")
 
-instance (FonctionContext g) => FonctionContext (CallContext g) where
-  fonctions (CallContext _ ctx) = fonctions ctx
-  source (CallContext _ ctx) = source ctx
+instance (ProgramContext g) => ProgramContext (FonctionContext'' g) where
+  readFuncFromContext (FonctionContext'' _ ctx) = readFuncFromContext ctx
 
-instance (FonctionContext g) => FonctionContext (RunContext g) where
-  fonctions (RunContext _ _ ctx) = fonctions ctx
-  source (RunContext _ _ ctx) = source ctx
+instance (ProgramContext g) => ProgramContext (EvaluationContext'' g) where
+  readFuncFromContext (EvaluationContext'' _ _ ctx) = readFuncFromContext ctx
 
-instance (FonctionContext g) => ParamContext (CallContext g) where
-  param (CallContext para _) = para
+instance (ProgramContext g) => FonctionContext (FonctionContext'' g) where
+  readParamFromContext (FonctionContext'' param _) (ParamIndex index) =
+    safeRead param index (Error "Invalid param index")
 
-instance (ParamContext c) => ParamContext (RunContext c) where
-  param (RunContext _ _ ctx) = param ctx
+instance (FonctionContext c) => FonctionContext (EvaluationContext'' c) where
+  readParamFromContext (EvaluationContext'' _ _ ctx) = readParamFromContext ctx
 
-instance (ParamContext c) => EvaluationContext (RunContext c) where
-  index (RunContext i _ _) = i
-  stack (RunContext _ s _) = s
-  evolveContext (RunContext index stack ctx) val = RunContext (index + 1) (val :| toList stack) ctx
+instance (FonctionContext c) => EvaluationContext (EvaluationContext'' c) where
+  evolveContext (EvaluationContext'' index stack ctx) val =
+    EvaluationContext'' (index + 1) (val :| toList stack) ctx
+  readValueFromContext (EvaluationContext'' index stack _) readIndex =
+    safeRead (toList stack) (exprIndex $ index - readIndex) (Error "Invalid index expression")
+  getFinalValue (EvaluationContext'' _ stack _) = head stack
 
-instance EvaluationContext' RunContext where
-  initEvaluationContext val = RunContext 0 $ val :| []
+instance EvaluationContext' EvaluationContext'' where
+  initEvaluationContext val = EvaluationContext'' 0 $ val :| []
 
-readContext :: (MaybeError m, EvaluationContext g) => g -> ExpressionIndex -> m Int
-readContext context readIndex =
-  safeRead (toList $ stack context) (exprIndex $ index context - readIndex) (Error "Invalid index expression")
+instance FonctionContext' FonctionContext'' where
+  initFonctionContext = FonctionContext''
 
-readFuncInContext :: (MaybeError m, FonctionContext c) => c -> FonctionIndex -> m Fonction
-readFuncInContext context (FonctionIndex index) =
-  safeRead (fonctions context) index (Error "Invalid func index")
-
-readParamInContext :: (MaybeError m, ParamContext c) => c -> ParamIndex -> m Int
-readParamInContext context (ParamIndex index) =
-  safeRead (param context) index (Error "Invalid param index")
+instance ProgramContext' ProgramContext'' where
+  initProgramContext = ProgramContext''

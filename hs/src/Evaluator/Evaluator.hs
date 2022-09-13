@@ -10,6 +10,15 @@ where
 
 import Control.Monad.Except (MonadError (throwError))
 import Evaluator.EvaluationContext
+    ( EvaluationContext'',
+      FonctionContext'(..),
+      ProgramContext'(..),
+      EvaluationContext'(..),
+      EvaluationContext(..),
+      FonctionContext(..),
+      ProgramContext(..),
+      FonctionContext'',
+      ProgramContext'' )
 import Evaluator.Helper (Error (..), readValue, MaybeError)
 import Model.Model (Application (..), Expression (..), Fonction (..), InstructionList (..), SimpleExpression (..))
 import Text.Read (readMaybe)
@@ -27,20 +36,28 @@ eval app = evalParam app []
 
 evalParam :: EvalContext m => Application -> [Int] -> m Int
 evalParam (Application mainFunc otherFunc) =
-  runFonction mainFunc (GlobalContext otherFunc 0)
+  runFonction mainFunc (tmpInit3 otherFunc 0)
 
 -- Comment supprimer cette fonction
-tmpInit :: (ParamContext c) => Int -> c -> RunContext c
-tmpInit = initEvaluationContext
+tmpInit1 :: (FonctionContext c) => Int -> c -> EvaluationContext'' c
+tmpInit1 = initEvaluationContext
 
-runFonction :: (EvalContext m, FonctionContext c) => Fonction -> c -> [Int] -> m Int
+-- Comment supprimer cette fonction
+tmpInit2 :: (ProgramContext  c )=> [Int]-> c -> FonctionContext'' c
+tmpInit2 = initFonctionContext
+
+-- Comment supprimer cette fonction
+tmpInit3 :: [Fonction] -> Int -> ProgramContext''
+tmpInit3 = initProgramContext
+
+runFonction :: (EvalContext m, ProgramContext c) => Fonction -> c -> [Int] -> m Int
 runFonction (Fonction (InstructionList first others) paramCount) context funcParam
   | Prelude.length funcParam /= paramCount = throwError $ Error "Invalid number of call arguments"
   | otherwise =
-    let preFuncContext = CallContext funcParam context
+    let preFuncContext = tmpInit2 funcParam context
      in do
           firstValue <- evalExpressionWithPreContext first preFuncContext
-          let tmp = tmpInit firstValue preFuncContext
+          let tmp = tmpInit1 firstValue preFuncContext
           evalExpressions others tmp
 
 type EvalContext m = (MaybeError m, MonadIO m)
@@ -50,7 +67,7 @@ evalExpressions (current : nexts) context =
   do
     val <- evalExpressionInContext context current
     evalExpressions nexts val
-evalExpressions [] context = return $ head $ stack context
+evalExpressions [] context = return $ getFinalValue context
 
 evalExpressionInContext :: (EvalContext m, EvaluationContext c) => c -> Expression -> m c
 evalExpressionInContext context expr =
@@ -61,32 +78,32 @@ evalExpressionInContext context expr =
 evalExpression :: (EvalContext m, EvaluationContext c) => Expression -> c -> m Int
 evalExpression (AdditionExpression first second) context =
   do
-    param1 <- readContext context first
-    param2 <- readContext context second
+    param1 <- readValueFromContext context first
+    param2 <- readValueFromContext context second
     return $ param1 + param2
 --
 evalExpression (ConditionalExpression cond notNullExpression nullExpression) context =
   let expressionSelector x = if x == 0 then nullExpression else notNullExpression
-   in readContext context cond >>= (\x -> evalExpression (expressionSelector x) context)
+   in readValueFromContext context cond >>= (\x -> evalExpression (expressionSelector x) context)
 --
 evalExpression (FuncCall funcIndex params) context =
   do
-    func <- readFuncInContext context funcIndex
-    param <- mapM (readContext context) params
+    func <- readFuncFromContext context funcIndex
+    param <- mapM (readValueFromContext context) params
     runFonction func context (toList param)
 --
 evalExpression (Simple expr) context =
   evalExpressionWithPreContext expr context
 
-evalExpressionWithPreContext :: (EvalContext m, ParamContext c) => SimpleExpression -> c -> m Int
+evalExpressionWithPreContext :: (EvalContext m, FonctionContext c) => SimpleExpression -> c -> m Int
 evalExpressionWithPreContext InvalidExpression _ = throwError (Error "Invalid Expression")
 --
 evalExpressionWithPreContext (ConstExpression val) _ = return val
 --
 evalExpressionWithPreContext (ParamExpression paramIndex) context =
-  readParamInContext context paramIndex
+  readParamFromContext context paramIndex
 --
 evalExpressionWithPreContext (SimpleCall funcIndex) context =
-  readFuncInContext context funcIndex >>= (\x -> runFonction x context [])
+  readFuncFromContext context funcIndex >>= (\x -> runFonction x context [])
 --
 evalExpressionWithPreContext (ExternalExpression _ _) _ = liftIO readValue
